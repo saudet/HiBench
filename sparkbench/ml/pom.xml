@@ -26,11 +26,23 @@
       <version>${spark.version}</version>
       <scope>provided</scope>
     </dependency>
+<!--
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-mllib_${scala.binary.version}</artifactId>
       <version>${spark.version}</version>
       <scope>provided</scope>
+    </dependency>
+-->
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>frovedis-mllib_${scala.binary.version}</artifactId>
+      <version>3.1.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.bytedeco</groupId>
+      <artifactId>frovedis-platform-ve</artifactId>
+      <version>1.0.0-1.5.7-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.github.scopt</groupId>

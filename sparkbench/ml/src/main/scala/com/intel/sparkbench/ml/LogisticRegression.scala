@@ -22,6 +22,7 @@ import org.apache.spark.mllib.classification.LogisticRegressionWithLBFGS
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
+import org.bytedeco.frovedis.frovedis_server
 
 object LogisticRegression {
 
@@ -35,6 +36,7 @@ object LogisticRegression {
     val conf = new SparkConf()
 	.setAppName("LogisticRegressionWithLBFGS")
     val sc = new SparkContext(conf)
+    frovedis_server.initialize("-np 8")
 
     // $example on$
     // Load training data in LIBSVM format.
@@ -47,7 +49,7 @@ object LogisticRegression {
 
     // Run training algorithm to build the model
     val model = new LogisticRegressionWithLBFGS()
-      .setNumClasses(10)
+      .setNumClasses(2)
       .run(training)
 
     // Compute raw scores on the test set.
