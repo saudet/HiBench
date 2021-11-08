@@ -53,14 +53,15 @@ object LogisticRegression {
       .run(training)
 
     // Compute raw scores on the test set.
-    val predictionAndLabels = test.map { case LabeledPoint(label, features) =>
+    val predictionAndLabels = test.collect().map { case LabeledPoint(label, features) =>
       val prediction = model.predict(features)
       (prediction, label)
     }
 
-    val accuracy = predictionAndLabels.filter(x => x._1 == x._2).count().toDouble / predictionAndLabels.count()
+    val accuracy = predictionAndLabels.filter(x => x._1 == x._2).length.toDouble / predictionAndLabels.length
     println(s"Accuracy = $accuracy")
 
+    frovedis_server.shut_down()
     sc.stop()
   }
 }
