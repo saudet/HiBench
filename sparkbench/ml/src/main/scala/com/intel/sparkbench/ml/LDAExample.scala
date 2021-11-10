@@ -22,6 +22,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.mllib.clustering.{LDA, DistributedLDAModel, LocalLDAModel}
 import org.apache.spark.mllib.linalg.{Vector, Vectors}
 import org.apache.spark.rdd.RDD
+import org.bytedeco.frovedis.frovedis_server
 import scopt.OptionParser
 object LDAExample {
   case class Params(
@@ -71,15 +72,18 @@ object LDAExample {
         .set("spark.driver.maxResultSize", params.maxResultSize)
     val sc = new SparkContext(conf)
 
+    frovedis_server.initialize("-np 8")
+
     val corpus: RDD[(Long, Vector)] = sc.objectFile(params.inputPath)
     
     // Cluster the documents into numTopics topics using LDA
     val ldaModel = new LDA().setK(params.numTopics).setMaxIterations(params.maxIterations).setOptimizer(params.optimizer).run(corpus)
 
     // Save and load model.
-    ldaModel.save(sc, params.outputPath)
-    val savedModel = LocalLDAModel.load(sc, params.outputPath)
+    ldaModel.save(sc, "/tmp/LDAModel")
+    val savedModel = com.nec.frovedis.mllib.clustering.LDAModel.load(sc, "/tmp/LDAModel")
 
+    frovedis_server.shut_down()
     sc.stop()
   }
 }

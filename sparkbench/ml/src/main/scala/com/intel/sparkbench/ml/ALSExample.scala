@@ -22,6 +22,7 @@ import org.apache.spark.ml.recommendation.ALS
 import org.apache.spark.ml.recommendation.ALS.Rating
 import org.apache.spark.sql.SparkSession
 import scopt.OptionParser
+import org.bytedeco.frovedis.frovedis_server
 
 object ALSExample {
 
@@ -75,6 +76,8 @@ object ALSExample {
       .getOrCreate()
     val sc = spark.sparkContext
 
+    frovedis_server.initialize("-np 8")
+
     import spark.implicits._
 
     val ratings = sc.objectFile[Rating[Int]](params.dataPath).toDF()
@@ -106,6 +109,7 @@ object ALSExample {
     val rmse = evaluator.evaluate(predictions)
     println(s"Root-mean-square error = $rmse")
 
+    frovedis_server.shut_down()
     spark.stop()
   }
 }

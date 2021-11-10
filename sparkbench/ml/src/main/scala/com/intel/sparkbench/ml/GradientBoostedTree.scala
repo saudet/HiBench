@@ -23,6 +23,7 @@ import org.apache.spark.mllib.tree.configuration.BoostingStrategy
 import org.apache.spark.mllib.tree.model.GradientBoostedTreesModel
 import org.apache.spark.rdd.RDD
 import org.apache.spark.mllib.regression.LabeledPoint
+import org.bytedeco.frovedis.frovedis_server
 
 import scopt.OptionParser
 
@@ -72,6 +73,8 @@ object GradientBoostedTree {
     val conf = new SparkConf().setAppName(s"Gradient Boosted Tree with $params")
     val sc = new SparkContext(conf)
 
+    frovedis_server.initialize("-np 8")
+
     val dataPath = params.dataPath
     val numClasses = params.numClasses
     val maxDepth = params.maxDepth
@@ -99,13 +102,14 @@ object GradientBoostedTree {
     val model = GradientBoostedTrees.train(trainingData, boostingStrategy)
 
     // Evaluate model on test instances and compute test error
-    val labelAndPreds = testData.map { point =>
+    val labelAndPreds = testData.collect().map { point =>
       val prediction = model.predict(point.features)
       (point.label, prediction)
     }
-    val testErr = labelAndPreds.filter(r => r._1 != r._2).count.toDouble / testData.count()
+    val testErr = labelAndPreds.filter(r => r._1 != r._2).length.toDouble / testData.count()
     println("Test Error = " + testErr)
 
+    frovedis_server.shut_down()
     sc.stop()
   }
 }

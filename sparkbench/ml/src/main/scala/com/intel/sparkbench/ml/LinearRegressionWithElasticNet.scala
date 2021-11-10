@@ -5,6 +5,7 @@ import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.ml.regression.LinearRegression
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.bytedeco.frovedis.frovedis_server
 
 import scopt.OptionParser
 
@@ -66,6 +67,8 @@ object LinearRegressionWithElasticNet {
       .appName("LinearRegressionWithElasticNet")
       .getOrCreate()
 
+    frovedis_server.initialize("-np 8")
+
     val training: DataFrame = loadDatasets(params.input,"regression",params.fracTest)
 
     val lr = new LinearRegression()
@@ -89,6 +92,7 @@ object LinearRegressionWithElasticNet {
     println(s"RMSE: ${trainingSummary.rootMeanSquaredError}")
     println(s"r2: ${trainingSummary.r2}")
 
+    frovedis_server.shut_down()
     spark.stop()
   }
 
