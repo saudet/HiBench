@@ -24,6 +24,7 @@ import org.apache.spark.ml.classification.NaiveBayes
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.sql.SparkSession
 import scopt.OptionParser
+import org.bytedeco.frovedis.frovedis_server
 
 object NaiveBayesExample {
 
@@ -57,6 +58,7 @@ object NaiveBayesExample {
       .builder
       .appName(s"NaiveBayesExample with $params")
       .getOrCreate()
+    frovedis_server.initialize("-np 8")
 
     val df = spark.read.parquet(params.input)
 
@@ -78,6 +80,7 @@ object NaiveBayesExample {
     val accuracy = evaluator.evaluate(predictions)
     println(s"Test set accuracy = $accuracy")
 
+    frovedis_server.shut_down()
     spark.stop()
   }
 }

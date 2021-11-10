@@ -24,6 +24,7 @@ import org.apache.spark.ml.linalg.Vectors
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.storage.StorageLevel
 import scopt.OptionParser
+import org.bytedeco.frovedis.frovedis_server
 
 object DenseKMeans {
 
@@ -82,6 +83,8 @@ object DenseKMeans {
 
     val sc = spark.sparkContext
 
+    frovedis_server.initialize("-np 8")
+
     val cacheStart = System.currentTimeMillis()
 
     val data = sc.sequenceFile[LongWritable, VectorWritable](params.input)
@@ -113,11 +116,12 @@ object DenseKMeans {
       .setTol(0)       //set convergence to 0, aiming to execute the number of iterations of the algorithm without being affected by the convergence parameters.
       .fit(examples)
 
-    val cost = model.summary.trainingCost
+//    val cost = model.summary.trainingCost
 
     println(s"Training time (ms) = ${System.currentTimeMillis() - trainingStart}")
-    println(s"Total cost = $cost.")
+//    println(s"Total cost = $cost.")
 
+    frovedis_server.shut_down()
     spark.stop()
   }
 }

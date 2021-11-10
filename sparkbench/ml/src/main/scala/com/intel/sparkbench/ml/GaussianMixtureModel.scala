@@ -24,6 +24,7 @@ import org.apache.spark.ml.linalg.Vectors
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.storage.StorageLevel
 import scopt.OptionParser
+import org.bytedeco.frovedis.frovedis_server
 
 case class Params(
   k: Int = -1,
@@ -68,6 +69,8 @@ object GaussianMixtureModel {
 
     val sc = spark.sparkContext
 
+    frovedis_server.initialize("-np 8")
+
     import spark.implicits._
 
     val cacheStart = System.currentTimeMillis()
@@ -104,6 +107,7 @@ object GaussianMixtureModel {
           s"mu=${model.gaussians(i).mean}\nsigma=\n${model.gaussians(i).cov}\n")
     }
 
+    frovedis_server.shut_down()
     spark.stop()
   }
 }
