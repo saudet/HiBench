@@ -82,12 +82,21 @@ object GradientBoostedTree {
     val numIterations = params.numIterations
     val learningRate = params.learningRate
 
+    val cacheStart = System.currentTimeMillis()
+
     // Load  data file.
     val data: RDD[LabeledPoint] = sc.objectFile(dataPath)
 
     // Split the data into training and test sets (30% held out for testing)
     val splits = data.randomSplit(Array(0.7, 0.3))
     val (trainingData, testData) = (splits(0), splits(1))
+
+    val numExamples = data.count()
+
+    println(s"Loading data time (ms) = ${System.currentTimeMillis() - cacheStart}")
+    println(s"numExamples = $numExamples.")
+
+    val trainingStart = System.currentTimeMillis()
 
     // Train a GradientBoostedTrees model.
     val boostingStrategy = BoostingStrategy.defaultParams("Classification")
@@ -100,6 +109,8 @@ object GradientBoostedTree {
     boostingStrategy.treeStrategy.categoricalFeaturesInfo = Map[Int, Int]()
 
     val model = GradientBoostedTrees.train(trainingData, boostingStrategy)
+
+    println(s"Training time (ms) = ${System.currentTimeMillis() - trainingStart}")
 
     // Evaluate model on test instances and compute test error
     val labelAndPreds = testData.collect().map { point =>

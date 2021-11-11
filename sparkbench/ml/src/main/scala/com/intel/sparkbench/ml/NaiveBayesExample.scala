@@ -60,13 +60,24 @@ object NaiveBayesExample {
       .getOrCreate()
     frovedis_server.initialize("-np 8")
 
+    val cacheStart = System.currentTimeMillis()
+
     val df = spark.read.parquet(params.input)
 
     // Split the data into training and test sets (20% held out for testing)
     val Array(trainingData, testData) = df.randomSplit(Array(0.8, 0.2), seed = 1234L)
 
+    val numExamples = df.count()
+
+    println(s"Loading data time (ms) = ${System.currentTimeMillis() - cacheStart}")
+    println(s"numExamples = $numExamples.")
+
+    val trainingStart = System.currentTimeMillis()
+
     // Train a NaiveBayes model.
     val model = new NaiveBayes().fit(trainingData)
+
+    println(s"Training time (ms) = ${System.currentTimeMillis() - trainingStart}")
 
     // Select example rows to display.
     val predictions = model.transform(testData)

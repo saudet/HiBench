@@ -74,10 +74,21 @@ object LDAExample {
 
     frovedis_server.initialize("-np 8")
 
+    val cacheStart = System.currentTimeMillis()
+
     val corpus: RDD[(Long, Vector)] = sc.objectFile(params.inputPath)
-    
+
+    val numExamples = corpus.count()
+
+    println(s"Loading data time (ms) = ${System.currentTimeMillis() - cacheStart}")
+    println(s"numExamples = $numExamples.")
+
+    val trainingStart = System.currentTimeMillis()
+
     // Cluster the documents into numTopics topics using LDA
     val ldaModel = new LDA().setK(params.numTopics).setMaxIterations(params.maxIterations).setOptimizer(params.optimizer).run(corpus)
+
+    println(s"Training time (ms) = ${System.currentTimeMillis() - trainingStart}")
 
     // Save and load model.
     ldaModel.save(sc, "/tmp/LDAModel")

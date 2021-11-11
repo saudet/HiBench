@@ -69,7 +69,16 @@ object LinearRegressionWithElasticNet {
 
     frovedis_server.initialize("-np 8")
 
+    val cacheStart = System.currentTimeMillis()
+
     val training: DataFrame = loadDatasets(params.input,"regression",params.fracTest)
+
+    val numExamples = training.count()
+
+    println(s"Loading data time (ms) = ${System.currentTimeMillis() - cacheStart}")
+    println(s"numExamples = $numExamples.")
+
+    val trainingStart = System.currentTimeMillis()
 
     val lr = new LinearRegression()
       .setFeaturesCol("features")
@@ -80,6 +89,8 @@ object LinearRegressionWithElasticNet {
 
     // Fit the model
     val lrModel = lr.fit(training)
+
+    println(s"Training time (ms) = ${System.currentTimeMillis() - trainingStart}")
 
     // Print the coefficients and intercept for linear regression
     println(s"Coefficients: ${lrModel.coefficients} Intercept: ${lrModel.intercept}")

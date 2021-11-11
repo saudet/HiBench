@@ -80,9 +80,18 @@ object ALSExample {
 
     import spark.implicits._
 
+    val cacheStart = System.currentTimeMillis()
+
     val ratings = sc.objectFile[Rating[Int]](params.dataPath).toDF()
 
     val Array(training, test) = ratings.randomSplit(Array(0.8, 0.2), 1L)
+
+    val numExamples = ratings.count()
+
+    println(s"Loading data time (ms) = ${System.currentTimeMillis() - cacheStart}")
+    println(s"numExamples = $numExamples.")
+
+    val trainingStart = System.currentTimeMillis()
 
     // Build the recommendation model using ALS on the training data
     val als = new ALS()
@@ -96,6 +105,8 @@ object ALSExample {
       .setItemCol("item")
       .setRatingCol("rating")
     val model = als.fit(training)
+
+    println(s"Training time (ms) = ${System.currentTimeMillis() - trainingStart}")
 
     // Evaluate the model by computing the RMSE on the test data
     // Note we set cold start strategy to 'drop' to ensure we don't get NaN evaluation metrics

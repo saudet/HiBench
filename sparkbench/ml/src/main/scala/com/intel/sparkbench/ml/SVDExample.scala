@@ -78,13 +78,24 @@ object SVDExample {
     val numSingularValues = params.numSingularValues
     val computeU = params.computeU
 
+    val cacheStart = System.currentTimeMillis()
+
     val data: RDD[Vector] = sc.objectFile(dataPath) 
     val mat: RowMatrix = new RowMatrix(data)
+
+    val numExamples = data.count()
+
+    println(s"Loading data time (ms) = ${System.currentTimeMillis() - cacheStart}")
+    println(s"numExamples = $numExamples.")
+
+    val trainingStart = System.currentTimeMillis()
 
     val svd: SingularValueDecomposition[RowMatrix, Matrix] = mat.computeSVD(numSingularValues, computeU)
     val U: RowMatrix = svd.U  // The U factor is a RowMatrix.
     val s: Vector = svd.s  // The singular values are stored in a local dense vector.
     val V: Matrix = svd.V  // The V factor is a local dense matrix.
+
+    println(s"Training time (ms) = ${System.currentTimeMillis() - trainingStart}")
 
     frovedis_server.shut_down()
     sc.stop()

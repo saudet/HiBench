@@ -76,6 +76,8 @@ object RandomForestClassification {
 
     frovedis_server.initialize("-np 8")
 
+    val cacheStart = System.currentTimeMillis()
+
     // $example on$
     // Load and parse the data file.
     val data: RDD[LabeledPoint] = sc.objectFile(params.inputPath)
@@ -84,6 +86,13 @@ object RandomForestClassification {
     val splits = data.randomSplit(Array(0.7, 0.3))
     val (trainingData, testData) = (splits(0), splits(1))
 
+    val numExamples = data.count()
+
+    println(s"Loading data time (ms) = ${System.currentTimeMillis() - cacheStart}")
+    println(s"numExamples = $numExamples.")
+
+    val trainingStart = System.currentTimeMillis()
+
     // Train a RandomForest model.
     // Empty categoricalFeaturesInfo indicates all features are continuous.
 
@@ -91,6 +100,8 @@ object RandomForestClassification {
 
     val model = RandomForest.trainClassifier(trainingData, params.numClasses, categoricalFeaturesInfo,
       params.numTrees, params.featureSubsetStrategy, params.impurity, params.maxDepth, params.maxBins)
+
+    println(s"Training time (ms) = ${System.currentTimeMillis() - trainingStart}")
 
     // Evaluate model on test instances and compute test error
     val labelAndPreds = testData.collect().map { point =>

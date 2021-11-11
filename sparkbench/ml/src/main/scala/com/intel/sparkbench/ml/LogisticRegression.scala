@@ -38,6 +38,8 @@ object LogisticRegression {
     val sc = new SparkContext(conf)
     frovedis_server.initialize("-np 8")
 
+    val cacheStart = System.currentTimeMillis()
+
     // $example on$
     // Load training data in LIBSVM format.
     val data: RDD[LabeledPoint] = sc.objectFile(inputPath)
@@ -47,10 +49,19 @@ object LogisticRegression {
     val training = splits(0).cache()
     val test = splits(1)
 
+    val numExamples = data.count()
+
+    println(s"Loading data time (ms) = ${System.currentTimeMillis() - cacheStart}")
+    println(s"numExamples = $numExamples.")
+
+    val trainingStart = System.currentTimeMillis()
+
     // Run training algorithm to build the model
     val model = new LogisticRegressionWithLBFGS()
       .setNumClasses(2)
       .run(training)
+
+    println(s"Training time (ms) = ${System.currentTimeMillis() - trainingStart}")
 
     // Compute raw scores on the test set.
     val predictionAndLabels = test.collect().map { case LabeledPoint(label, features) =>

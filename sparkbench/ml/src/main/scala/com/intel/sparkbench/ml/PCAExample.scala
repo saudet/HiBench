@@ -61,17 +61,28 @@ object PCAExample {
 
     frovedis_server.initialize("-np 8")
 
+    val cacheStart = System.currentTimeMillis()
+
     // Load training data
     val data: RDD[LabeledPoint] = spark.sparkContext.objectFile(params.dataPath)
     import spark.implicits._
 
     val df = data.toDF()
 
+    val numExamples = df.count()
+
+    println(s"Loading data time (ms) = ${System.currentTimeMillis() - cacheStart}")
+    println(s"numExamples = $numExamples.")
+
+    val trainingStart = System.currentTimeMillis()
+
     val pca = new PCA()
       .setInputCol("features")
       .setOutputCol("pcaFeatures")
       .setK(params.k)
       .fit(df)
+
+    println(s"Training time (ms) = ${System.currentTimeMillis() - trainingStart}")
 
     val result = pca.transform(df).select("pcaFeatures")
 

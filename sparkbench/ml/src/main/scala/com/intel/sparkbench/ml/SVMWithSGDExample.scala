@@ -77,6 +77,8 @@ object SVMWithSGDExample {
     val regParam = params.regParam
     val storageLevel = StorageLevel.fromString(params.storageLevel)
 
+    val cacheStart = System.currentTimeMillis()
+
     val data: RDD[LabeledPoint] = sc.objectFile(dataPath)
 
     // Split data into training (60%) and test (40%).
@@ -84,8 +86,17 @@ object SVMWithSGDExample {
     val training = splits(0).persist(storageLevel)
     val test = splits(1)
 
+    val numExamples = data.count()
+
+    println(s"Loading data time (ms) = ${System.currentTimeMillis() - cacheStart}")
+    println(s"numExamples = $numExamples.")
+
+    val trainingStart = System.currentTimeMillis()
+
     // Run training algorithm to build the model
     val model = SVMWithSGD.train(training, numIterations, stepSize, regParam)
+
+    println(s"Training time (ms) = ${System.currentTimeMillis() - trainingStart}")
 
     // Clear the default threshold.
     model.clearThreshold()
