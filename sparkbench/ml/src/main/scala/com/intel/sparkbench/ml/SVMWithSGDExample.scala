@@ -23,7 +23,7 @@ import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.rdd.RDD
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.storage.StorageLevel
-
+import org.bytedeco.frovedis.frovedis_server
 import scopt.OptionParser
 
 object SVMWithSGDExample {
@@ -69,6 +69,8 @@ object SVMWithSGDExample {
     val conf = new SparkConf().setAppName(s"SVM with $params")
     val sc = new SparkContext(conf)
 
+    frovedis_server.initialize("-np 8")
+
     val dataPath = params.dataPath
     val numIterations = params.numIterations
     val stepSize = params.stepSize
@@ -89,17 +91,18 @@ object SVMWithSGDExample {
     model.clearThreshold()
 
     // Compute raw scores on the test set.
-    val scoreAndLabels = test.map { point =>
+    val scoreAndLabels = test.collect().map { point =>
       val score = model.predict(point.features)
       (score, point.label)
     }
 
     // Get evaluation metrics.
-    val metrics = new BinaryClassificationMetrics(scoreAndLabels)
+    val metrics = new BinaryClassificationMetrics(sc.parallelize(scoreAndLabels))
     val auROC = metrics.areaUnderROC()
 
     println("Area under ROC = " + auROC)
 
+    frovedis_server.shut_down()
     sc.stop()
   }
 }

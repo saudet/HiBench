@@ -24,7 +24,7 @@ import org.apache.spark.mllib.linalg.SingularValueDecomposition
 import org.apache.spark.mllib.linalg.Vector
 import org.apache.spark.mllib.linalg.distributed.RowMatrix
 import org.apache.spark.rdd.RDD
-
+import org.bytedeco.frovedis.frovedis_server
 import scopt.OptionParser
 
 object SVDExample {
@@ -71,6 +71,8 @@ object SVDExample {
         .set("spark.driver.maxResultSize", params.maxResultSize)
     val sc = new SparkContext(conf)
 
+    frovedis_server.initialize("-np 8")
+
     val dataPath = params.dataPath
     val numFeatures = params.numFeatures
     val numSingularValues = params.numSingularValues
@@ -84,6 +86,7 @@ object SVDExample {
     val s: Vector = svd.s  // The singular values are stored in a local dense vector.
     val V: Matrix = svd.V  // The V factor is a local dense matrix.
 
+    frovedis_server.shut_down()
     sc.stop()
   }
 }

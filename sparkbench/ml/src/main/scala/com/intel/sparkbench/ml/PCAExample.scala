@@ -20,6 +20,7 @@ package com.intel.hibench.sparkbench.ml
 import org.apache.spark.ml.feature.{LabeledPoint, PCA}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
+import org.bytedeco.frovedis.frovedis_server
 import scopt.OptionParser
 
 object PCAExample {
@@ -58,6 +59,8 @@ object PCAExample {
       .config("spark.driver.maxResultSize", params.maxResultSize)
       .getOrCreate()
 
+    frovedis_server.initialize("-np 8")
+
     // Load training data
     val data: RDD[LabeledPoint] = spark.sparkContext.objectFile(params.dataPath)
     import spark.implicits._
@@ -72,6 +75,7 @@ object PCAExample {
 
     val result = pca.transform(df).select("pcaFeatures")
 
+    frovedis_server.shut_down()
     spark.stop()
   }
 }

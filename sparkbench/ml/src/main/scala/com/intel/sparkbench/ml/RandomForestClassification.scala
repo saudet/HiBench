@@ -24,6 +24,7 @@ import org.apache.spark.mllib.tree.model.RandomForestModel
 import org.apache.spark.mllib.util.MLUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.mllib.regression.LabeledPoint
+import org.bytedeco.frovedis.frovedis_server
 import scopt.OptionParser
 
 object RandomForestClassification {
@@ -73,6 +74,8 @@ object RandomForestClassification {
     val conf = new SparkConf().setAppName(s"RFC with $params")
     val sc = new SparkContext(conf)
 
+    frovedis_server.initialize("-np 8")
+
     // $example on$
     // Load and parse the data file.
     val data: RDD[LabeledPoint] = sc.objectFile(params.inputPath)
@@ -90,13 +93,14 @@ object RandomForestClassification {
       params.numTrees, params.featureSubsetStrategy, params.impurity, params.maxDepth, params.maxBins)
 
     // Evaluate model on test instances and compute test error
-    val labelAndPreds = testData.map { point =>
+    val labelAndPreds = testData.collect().map { point =>
       val prediction = model.predict(point.features)
       (point.label, prediction)
     }
-    val testErr = labelAndPreds.filter(r => r._1 != r._2).count.toDouble / testData.count()
+    val testErr = labelAndPreds.filter(r => r._1 != r._2).length.toDouble / testData.count()
     println("Test Error = " + testErr)
 
+    frovedis_server.shut_down()
     sc.stop()
   }
 }
